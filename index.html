@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+    <link rel="stylesheet" href="style.css">
+    <script src="js.js"></script>
+    <title>Tetris</title>
+</head>
+<body>  
+    <main class="contenedor">
+        <div class="zona-juego">
+        </div>
+        <div class="zona-info">
+            <div class="detalles-partida">
+                <div class="puntajes-contenedor">
+                    <span >Puntaje act.: <p id="puntaje-actual">0</p></span>
+                    <span>Puntaje max.:<p id="puntaje-max">0</p></span>
+                    <span>Siguiente pieza:</span>
+                </div>
+                <span class="siguiente-pieza">
+
+                </span>
+
+            </div>
+            <div class="controles">
+
+            </div>
+        </div>
+    </main>
+    <script>
+        const DIMENSION_BLOQUE = 20
+        let INTERVALO_CAIDA = 300 //ms
+
+        const zona_juego = document.getElementsByClassName("zona-juego")[0]
+        const puntaje_actual = document.getElementById("puntaje-actual")
+        const puntaje_max = document.getElementById("puntaje-max")
+
+        let alturaZonaJuego = zona_juego.offsetHeight
+        let ladoZonaJuego = zona_juego.offsetWidth
+
+        let cantFilas = alturaZonaJuego / DIMENSION_BLOQUE
+        let cantColumnas = ladoZonaJuego / DIMENSION_BLOQUE
+        let totalBloques = cantFilas * cantColumnas
+        
+        let bloques=[]
+        const claseBloque = (n)=> `bloque bloque-${n}`
+        const IDBloque = (n)=> `bloque-${n}`
+        for (let index = 0; index < totalBloques; index++) {
+            const bloque = document.createElement("span")
+            bloque.className = claseBloque(index)
+            bloque.id = IDBloque(index)
+            bloque.style =  `width:${DIMENSION_BLOQUE}px; height:${DIMENSION_BLOQUE}px;`
+
+            bloques.push(bloque)
+            zona_juego.appendChild(bloque)            
+        }
+
+        const PIEZAS = [ //no puede haber pieza cero
+            {
+                class: "pieza-uno",
+                id:1,
+                forma:[
+                    [,1,],
+                    [1,1,1]
+                ]
+            },
+            {
+                class: "pieza-dos",
+                id:2,
+                forma:[
+                    [1,1],
+                    [1,1]
+                ]
+            },
+            {
+                class: "pieza-tres",
+                id:3,
+                forma:[
+                    [1],
+                    [1],
+                    [1,1]
+                ]
+            },
+            {
+                class: "pieza-cuatro",
+                id: 4,
+                forma:[
+                    [1,1,1,1,1,1],
+                ]
+            },            
+            {
+                class: "pieza-cinco",
+                id:5,
+                forma:[
+                    [1,1,],
+                    [,1,1]
+                ]
+            },
+        ]
+        
+        function acelerarCaidaPieza(){
+            INTERVALO_CAIDA -= 5 // mejorar
+        }
+        function obtenerPiezaAleatoria(){
+            let cantPiezas = PIEZAS.length | 0
+            if(cantPiezas < 1){
+                alert("ERROR: \n Sin piezas diponibles")
+                console.error("Piezas no existe")
+                throw new Error("Piezas no existe")
+            }
+            let numAleatorio = Math.floor((Math.random() * cantPiezas))
+            console.log("Numero aleatorio de pieza",numAleatorio)
+            return PIEZAS[numAleatorio]
+        }
+        
+
+        
+    
+        let PIEZA_SIGUIENTE = null
+        let FIN_JUEGO = false
+        const TABLERO=[]
+        const PIEZAS_EN_TABLERO= new Array(totalBloques).fill(0)
+
+        let caida = null
+        let piezaCayendo = false
+        
+        window.onload = ()=>iniciarJuego()
+
+        function iniciarJuego(){
+            if (FIN_JUEGO) {
+                finalizarJuego()
+                return
+            }
+
+            if (!PIEZA_SIGUIENTE){
+                PIEZA_SIGUIENTE = obtenerPiezaAleatoria()
+                puntuarPartida()
+                mostrarPuntajeMax()
+            }
+            // setTimeout(()=>{
+            //     caida = setInterval(desplazarPieza,INTERVALO_CAIDA,siguientePieza())
+            // }, 500)
+            if(!piezaCayendo){
+                caida = setInterval(desplazarPieza,INTERVALO_CAIDA, PIEZA_SIGUIENTE)
+                PIEZA_SIGUIENTE = obtenerPiezaAleatoria()
+                mostrarSiguientePieza()
+            }
+            setTimeout(iniciarJuego,INTERVALO_CAIDA)
+        }
+
+        
+        function guardarPuntajeMax(maxPuntaje){
+            localStorage.setItem('maximoPuntaje', maxPuntaje)
+        }
+
+        function evaluarPuntaje(){
+            const puntajeGuardado = localStorage.getItem('maximoPuntaje') | 0
+            if( puntaje >  puntajeGuardado){
+                guardarPuntajeMax(puntaje)
+                mostrarPuntajeMax()
+            }
+        }
+
+        let puntaje = 0
+        let contadorPuntaje = null
+        function puntuarPartida(){
+            contadorPuntaje = setInterval(()=>{
+                puntaje++
+                mostrarPuntaje()
+            },INTERVALO_CAIDA*5)
+
+        }
+        function mostrarPuntaje(){
+            puntaje_actual.textContent = puntaje
+        }
+        function mostrarPuntajeMax(){
+            const puntajeGuardado = localStorage.getItem('maximoPuntaje') | 0
+            puntaje_max.textContent = puntajeGuardado
+        }
+
+        function finalizarJuego(){ // falta finalizar todo
+            detenerContadorPuntaje()
+            evaluarPuntaje()
+            alert("JUEGO TERMINADO")
+        }
+
+        function detenerContadorPuntaje(){
+            clearInterval(contadorPuntaje)
+            contadorPuntaje = null
+        }
+
+        function mostrarSiguientePieza(){
+            const contenedor_siguiente_pieza = document.getElementsByClassName("siguiente-pieza")[0]
+            contenedor_siguiente_pieza.textContent= PIEZA_SIGUIENTE.class
+        }
+         
+        let piezaActiva = null
+        let coordenadasPiezaCayendo=[]
+        let filasDesplazadas = 1
+        function desplazarPieza(pieza){
+            piezaCayendo = true
+            piezaActiva = pieza
+            let caidaPieza = []
+
+            limpiarEstela(pieza)
+            if (coordenadasPiezaCayendo.length > 0){ //desplazar pieza en tablero
+                coordenadasPiezaCayendo.forEach((c,i)=>{
+                    coordenadasPiezaCayendo[i] =  cantColumnas + c 
+                })
+                filasDesplazadas++
+            }
+            
+            let contador=0
+            if(coordenadasPiezaCayendo.length == 0){
+
+                pieza.forma.forEach((f, indexF) => {  //determinar coordenadas de figura en tablero
+                    f.forEach((c, indexC)=>{
+                        if(indexF > 0){
+                            let filaPieza = indexF * cantColumnas
+                            // console.log("Dentro de if")
+                            // console.log("contador: ", contador)
+                            // console.log("desplazamiento vertical:", desplVertical)
+                            // console.log("coordenandas cayendo: ", caidaPieza)
+                            // console.log("filas Desplazadas: ", filasDesplazadas)
+                            // console.log("==========================\n\n")
+                            
+                            caidaPieza[contador] = c + indexC + filaPieza + (caidaPieza[contador] | 0)  - 1 
+                        }else{
+                            console.log("Fuera de if")
+                            caidaPieza[contador] = c + indexC + (caidaPieza[contador] | 0)  - 1 
+                        }
+                        contador++
+                    })
+                });
+                
+                if(coordenadasPiezaCayendo.length > 0){
+                    coordenadasPiezaCayendo.forEach((c,i)=>coordenadasPiezaCayendo[i] = caidaPieza[i] + c)
+                }else{
+                    coordenadasPiezaCayendo = caidaPieza
+                }
+            }
+
+            dibujarPiezaEnTablero(pieza)
+            // if (filasDesplazadas == 2 ) {clearInterval(caida)}
+            console.log("Fila: ", filasDesplazadas, "de: ", cantFilas)
+
+            colision = coordenadasPiezaCayendo.some(c=>{
+                let colisionProxima = c+cantColumnas
+                return PIEZAS_EN_TABLERO[colisionProxima] > 0
+            })
+
+            // if(filasDesplazadas > 3) {
+            if(filasDesplazadas > (cantFilas - pieza.forma.length) || colision) {
+                console.log("Deteniendo caida")
+                coordenadasPiezaCayendo.forEach((c)=> PIEZAS_EN_TABLERO[c]=pieza.id)
+
+                clearInterval(caida)
+                caida = null
+                coordenadasPiezaCayendo = []
+                filasDesplazadas = 1
+                piezaCayendo = false
+                comprobarFilaCompletada()
+                comprobarFinJuego()
+                acelerarCaidaPieza()
+            }
+        }
+        function comprobarFilaCompletada(){
+            for (let fila = 0; fila < cantFilas; fila++) {
+                const posicionIni = fila * cantColumnas
+                const posicionFin = (fila * cantColumnas) + cantColumnas 
+                const filaTablero = PIEZAS_EN_TABLERO.slice(posicionIni, posicionFin)
+                const filaCompletada = !filaTablero.some(c=>c == 0)
+                // console.log("incicio: ", posicionIni, "  fin: ", posicionFin, "Fila: ", filaTablero)
+                if (filaCompletada) {
+                    limpiarFilaCompletada(posicionIni)
+                    borrarFilaTablero(posicionIni, posicionFin)
+                    puntaje += 100
+                    setTimeout(()=>null,INTERVALO_CAIDA/2) //permite ver la desapariión de la fila y evita conflicto de comprobacion de fila
+                    redibujarTablero(fila)
+                }
+            }
+        }
+
+        function limpiarFilaCompletada(ini){
+            PIEZAS_EN_TABLERO.splice(ini,cantColumnas)
+            PIEZAS_EN_TABLERO.unshift(... new Array(cantColumnas).fill(0))
+        }
+
+        function borrarFilaTablero(ini, fin){
+            for(i=ini; i < fin; i++){
+                bloques[i].className = claseBloque(i)
+            }
+        }
+
+        function redibujarTablero(filaInicio){
+            for (let i = 0; i < totalBloques; i++) {
+                const clasePieza = PIEZAS_EN_TABLERO[i] == 0 ? "" : PIEZAS[PIEZAS_EN_TABLERO[i] - 1].class
+                const nuevaClase =`${claseBloque(i)} ${clasePieza}`
+                bloques[i].className = nuevaClase
+                
+            }
+            // for (let fila = filaInicio; fila < cantFilas; fila--) {
+            //     const filaSuperior = fila - 1
+            //     const bloqueIni = fila * cantColumnas
+            //     const bloqueFin = (fila * cantColumnas )+ cantColumnas
+            //     const bloqueSuperiorIni = filaSuperior * cantColumnas
+            //     const bloqueSuperiorFin = (filaSuperior * cantColumnas ) + cantColumnas
+
+            //     for (let bloque = bloqueIni; bloque < bloqueFin; bloque++) {
+            //         bloques[bloque]
+                    
+            //     }
+                
+            // }
+        }
+
+        function comprobarFinJuego(){
+            for (let index = 0; index < cantColumnas; index++) {
+                if (PIEZAS_EN_TABLERO[index] == 1){
+                    FIN_JUEGO = true
+                    return
+                }
+                
+            }
+        }
+    
+        
+        document.addEventListener("keydown",(e)=>teclaPresionada(e))
+        function teclaPresionada(evt){
+            console.log("tecla presionada")
+            switch(evt.key){
+                case 'ArrowUp':
+                    
+                    break
+                case 'ArrowDown':
+                    
+                    break
+                case 'ArrowLeft':
+                    console.log("flecha izquierda")
+                    moverPiezaLateral(-1)
+                    break
+                case 'ArrowRight':
+                    console.log("flecha derecha")
+                    moverPiezaLateral(1)
+                    
+                    break
+            }
+        }
+
+        function moverPiezaLateral(n){
+            if (coordenadasPiezaCayendo.length == 0) return
+
+            let nuevasCoordenadas = coordenadasPiezaCayendo.map((c,i)=>c + n)
+            let filasNuevas = nuevasCoordenadas.map(c=>Math.trunc(c/cantColumnas))
+            let filasAntiguas = coordenadasPiezaCayendo.map(c=>Math.trunc(c/cantColumnas))
+            let cambiaFila = filasNuevas.some((f,i)=>(filasAntiguas[i] != f))
+            let colisionLateral = nuevasCoordenadas.some(c=> PIEZAS_EN_TABLERO[c] > 0)
+            
+            if(cambiaFila | colisionLateral) return
+            
+            limpiarEstela(piezaActiva)
+            coordenadasPiezaCayendo.forEach((c,i)=>coordenadasPiezaCayendo[i] = coordenadasPiezaCayendo[i] + n)
+            dibujarPiezaEnTablero(piezaActiva)
+            
+        }
+
+        function dibujarPiezaEnTablero(pieza){
+            coordenadasPiezaCayendo.forEach((c)=>{
+                    bloques[c].classList.add(pieza.class)
+                })
+        }
+        function limpiarEstela(pieza){
+                if (coordenadasPiezaCayendo.length > 0){
+                    coordenadasPiezaCayendo.forEach((c)=>{
+                        bloques[c].classList.remove(pieza.class)
+                    })
+                }
+        }
+    </script>
+    
+</body>
+</html>

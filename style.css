@@ -1,0 +1,89 @@
+*{
+    box-sizing: border-box;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100dvh;
+}
+
+.contenedor{
+    max-width: 650px;
+    width: 650px;
+    border: solid 20px rgb(162, 96, 63);
+    display: flex;
+}
+.zona-info{
+    width: 100%;
+    border-left: 20px solid rgb(162, 96, 63);
+    display: flex;
+    flex-direction: column;
+    
+}
+.zona-juego{
+    width: 380px;
+    min-width: 380px;
+    aspect-ratio: 19/32;
+    display: flex;
+    flex-wrap: wrap;
+}
+.controles{
+    border-top: solid 10px rgb(162, 96, 63);
+    height: 50%;
+
+}
+.puntajes-contenedor{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: fit-content;
+    padding: 8px;
+    gap: 0.5rem;
+}
+.detalles-partida{
+    border-bottom: solid 10px rgb(162, 96, 63);
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    
+}
+.siguiente-pieza{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(157, 157, 157);
+    width: 100%;
+    height: 100%;
+}
+
+.bloque{
+    background:linear-gradient(45deg, #3d2d5d 40%, #141322 100%)
+}
+.pieza-uno{
+    border: 1px solid #204783;
+    background: linear-gradient(137deg, #30a3f6 40%, #035981 100%);
+}
+.pieza-dos{
+    border: 1px solid #204783;
+    background: linear-gradient(137deg, #d2f630 40%, #1c8103 100%);
+}
+.pieza-tres{
+    border: 1px solid #204783;
+    background: linear-gradient(137deg, #ce30f6 40%, #81035f 100%);
+}
+.pieza-cuatro{
+    border: 1px solid #204783;
+    background: linear-gradient(137deg, #f67930 40%, #a4a015 100%);
+}
+.pieza-cinco{
+    border: 1px solid #204783;
+    background: linear-gradient(137deg, #304ef6 40%, #090381 100%);
+}
