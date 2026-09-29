@@ -359,7 +359,7 @@ function moverPiezaAbajo(){
             let colision = nuevasCoordenadas.some(c=> PIEZAS_EN_TABLERO[c] > 0)
             
             if(colision) return
-            
+            filasDesplazadas++
             limpiarEstela(piezaActiva)
             coordenadasPiezaCayendo.forEach((c,i)=>coordenadasPiezaCayendo[i] = nuevasCoordenadas[i])
             dibujarPiezaEnTablero(piezaActiva)
