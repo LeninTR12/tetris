@@ -283,6 +283,8 @@
             }
         }
 
+
+        
         function limpiarFilaCompletada(ini){
             PIEZAS_EN_TABLERO.splice(ini,cantColumnas)
             PIEZAS_EN_TABLERO.unshift(... new Array(cantColumnas).fill(0))
@@ -335,7 +337,7 @@
                     
                     break
                 case 'ArrowDown':
-                    
+                    moverPiezaAbajo()
                     break
                 case 'ArrowLeft':
                     console.log("flecha izquierda")
@@ -348,7 +350,20 @@
                     break
             }
         }
+function moverPiezaAbajo(){
+            if (coordenadasPiezaCayendo.length == 0) return
+            
+            let nuevasCoordenadas = coordenadasPiezaCayendo.map((c,i)=>c + cantColumnas)
+            let filasNuevas = nuevasCoordenadas.map(c=>Math.trunc(c/cantColumnas))
 
+            let colision = nuevasCoordenadas.some(c=> PIEZAS_EN_TABLERO[c] > 0)
+            
+            if(colision) return
+            
+            limpiarEstela(piezaActiva)
+            coordenadasPiezaCayendo.forEach((c,i)=>coordenadasPiezaCayendo[i] = nuevasCoordenadas[i])
+            dibujarPiezaEnTablero(piezaActiva)
+}
         function moverPiezaLateral(n){
             if (coordenadasPiezaCayendo.length == 0) return
 
